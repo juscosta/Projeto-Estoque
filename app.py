@@ -3,17 +3,23 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
-from config import config
 from models.database import db, Usuario, Produto, MovimentacaoEstoque, Categoria
 from forms import LoginForm, RegisterForm, ProdutoForm, MovimentacaoForm
 import os
 from datetime import datetime
 from functools import wraps
 
-def create_app(config_name='default'):
+def create_app():
     """Factory function para criar a aplicação Flask"""
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
+    
+    # Configurações básicas
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estoque.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+    app.config['UPLOAD_FOLDER'] = 'static/uploads'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
     
     # Inicializa extensões
     db.init_app(app)
