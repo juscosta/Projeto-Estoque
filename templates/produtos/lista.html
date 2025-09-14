@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Produtos - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-boxes text-primary"></i>
+                    Produtos
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                            <a href="{{ url_for('main.produto_novo') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i>
+                        Novo Produto
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtros e busca -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="busca" class="form-label">Buscar produto</label>
+                            <input type="text" class="form-control" id="busca" name="busca" 
+                                   placeholder="Nome ou código..." value="{{ request.args.get('busca', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="categoria" class="form-label">Categoria</label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="">Todas as categorias</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}" {{ 'selected' if request.args.get('categoria') == cat }}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos</option>
+                                <option value="ativo" {{ 'selected' if request.args.get('status') == 'ativo' }}>Ativo</option>
+                                <option value="inativo" {{ 'selected' if request.args.get('status') == 'inativo' }}>Inativo</option>
+                                <option value="baixo_estoque" {{ 'selected' if request.args.get('status') == 'baixo_estoque' }}>Baixo Estoque</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-search"></i>
+                                Filtrar
+                            </button>
+                            <a href="{{ url_for('main.produtos') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alertas de estoque baixo -->
+            {% if produtos_baixo_estoque %}
+            <div class="alert alert-warning">
+                <h6><i class="bi bi-exclamation-triangle"></i> Atenção: {{ produtos_baixo_estoque|length }} produto(s) com estoque baixo</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for produto in produtos_baixo_estoque[:5] %}
+                        <span class="badge bg-warning text-dark">{{ produto.nome }}</span>
+                    {% endfor %}
+                    {% if produtos_baixo_estoque|length > 5 %}
+                        <span class="badge bg-secondary">+{{ produtos_baixo_estoque|length - 5 }} mais...</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tabela de produtos -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Lista de Produtos</h5>
+                    <span class="badge bg-secondary">{{ produtos.total if produtos else 0 }} produto(s)</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if produtos and produtos.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="8%">Código</th>
+                                    <th>Nome</th>
+                                    <th width="15%">Categoria</th>
+                                    <th width="12%" class="text-end">Preço</th>
+                                    <th width="10%" class="text-center">Estoque</th>
+                                    <th width="8%" class="text-center">Status</th>
+                                    <th width="12%" class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produto in produtos.items %}
+                                <tr class="{{ 'table-warning' if produto.quantidade <= produto.estoque_minimo }}">
+                                    <td>
+                                        <code class="small">{{ produto.codigo }}</code>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ produto.nome }}</strong>
+                                            {% if produto.descricao %}
+                                            <br><small class="text-muted">{{ produto.descricao[:50] }}{% if produto.descricao|length > 50 %}...{% endif %}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ produto.categoria }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>R$ {{ "%.2f"|format(produto.preco) }}</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if produto.quantidade <= produto.estoque_minimo %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                {{ produto.quantidade }}
+                                            </span>
+                                        {% elif produto.quantidade > 50 %}
+                                            <span class="badge bg-success">{{ produto.quantidade }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ produto.quantidade }}</span>
+                                        {% endif %}
+                                        <br><small class="text-muted">Min: {{ produto.estoque_minimo }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if produto.ativo %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('main.produto_editar', id=produto.id) }}" 
+                                               class="btn btn-outline-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" 
+                                    title="Excluir" onclick="confirmarExclusao({{ produto.id }}, '{{ produto.nome }}')">
+                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if produtos.pages > 1 %}
+                    <div class="card-footer">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if produtos.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.produtos', page=produtos.prev_num, **request.args) }}">
+                                            <i class="bi bi-chevron-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-left"></i> Anterior</span>
+                                    </li>
+                                {% endif %}
+
+                                {% for page_num in produtos.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != produtos.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('main.produtos', page=page_num, **request.args) }}">
+                                                    {{ page_num }}
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if produtos.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.produtos', page=produtos.next_num, **request.args) }}">
+                                            Próxima <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Próxima <i class="bi bi-chevron-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-box-seam fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhum produto encontrado</h5>
+                        <p class="text-muted">
+                            {% if request.args.get('busca') or request.args.get('categoria') or request.args.get('status') %}
+                                Tente ajustar os filtros ou
+                            {% else %}
+                                Comece
+                            {% endif %}
+                            <a href="{{ url_for('main.produto_novo') }}">cadastrando seu primeiro produto</a>.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o produto <strong id="produtoNome"></strong>?</p>
+                <p class="small text-muted">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formExcluir" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i>
+                        Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(produtoId, produtoNome) {
+    document.getElementById('produtoNome').textContent = produtoNome;
+    document.getElementById('formExcluir').action = `/produto/${produtoId}/excluir`;
+    new bootstrap.Modal(document.getElementById('modalExcluir')).show();
+}
+
+// Auto-submit do filtro ao selecionar categoria ou status
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('#categoria, #status');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

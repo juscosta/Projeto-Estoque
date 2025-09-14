@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-box text-primary"></i>
+                    {{ titulo }}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                <a href="{{ url_for('main.produtos') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card do formulário -->
+            <div class="row">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-edit text-primary"></i>
+                                Informações do Produto
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" enctype="multipart/form-data">
+                                {{ form.hidden_tag() }}
+                                
+                                <!-- Nome -->
+                                <div class="mb-3">
+                                    {{ form.nome.label(class="form-label") }}
+                                    {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                                    {% if form.nome.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nome.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Código -->
+                                <div class="mb-3">
+                                    {{ form.codigo.label(class="form-label") }}
+                                    {{ form.codigo(class="form-control" + (" is-invalid" if form.codigo.errors else "")) }}
+                                    {% if form.codigo.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.codigo.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Descrição -->
+                                <div class="mb-3">
+                                    {{ form.descricao.label(class="form-label") }}
+                                    {{ form.descricao(class="form-control", rows="3") }}
+                                    {% if form.descricao.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.descricao.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <!-- Categoria -->
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.categoria.label(class="form-label") }}
+                                        {{ form.categoria(class="form-select" + (" is-invalid" if form.categoria.errors else "")) }}
+                                        {% if form.categoria.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.categoria.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Preço -->
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.preco.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">R$</span>
+                                            {{ form.preco(class="form-control" + (" is-invalid" if form.preco.errors else ""), step="0.01") }}
+                                            {% if form.preco.errors %}
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.preco.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+
+                                    <!-- Estoque mínimo -->
+                                    <div class="col-md-12 mb-3">
+                                        {{ form.estoque_minimo.label(class="form-label") }}
+                                        {{ form.estoque_minimo(class="form-control" + (" is-invalid" if form.estoque_minimo.errors else "")) }}
+                                        {% if form.estoque_minimo.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.estoque_minimo.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+
+                                <!-- Botões de ação -->
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Salvar Produto
+                                    </button>
+                                    <a href="{{ url_for('main.produtos') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card de ajuda (opcional) -->
+                <div class="col-lg-4 col-xl-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Dicas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info border-0">
+                                <h6><i class="fas fa-lightbulb"></i> Dicas importantes:</h6>
+                                <ul class="mb-0 small">
+                                    <li>O código deve ser único para cada produto</li>
+                                    <li>Defina um estoque mínimo adequado para evitar rupturas</li>
+                                    <li>Produtos inativos não aparecem nas vendas</li>
+                                    <li>Preços devem ser inseridos com ponto decimal (ex: 10.50)</li>
+                                </ul>
+                            </div>
+
+                            {% if form.errors %}
+                            <div class="alert alert-danger border-0 mt-3">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Atenção!</h6>
+                                <p class="small mb-0">Corrija os erros destacados no formulário.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script para formatar preço em tempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const precoInput = document.getElementById('preco');
+    if (precoInput) {
+        precoInput.addEventListener('input', function() {
+            let valor = this.value.replace(/[^\d.,]/g, '');
+            valor = valor.replace(',', '.');
+            this.value = valor;
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Controle de Estoque{% endblock %}
+
+{% block content %}
+<!-- Header do Dashboard -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-0">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </h2>
+                <p class="text-muted mb-0">Visão geral do sistema de estoque</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <!-- Total de Produtos -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total de Produtos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_produtos }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box-seam fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.produtos') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Ver Produtos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Produtos com Estoque Baixo -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Estoque Baixo
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ produtos_estoque_baixo }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-exclamation-triangle fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('main.alertas') }}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-bell"></i> Ver Alertas
+                    </a>
+                    {% else %}
+                    <button class="btn btn-sm btn-outline-warning" onclick="carregarAlertas()">
+                        <i class="bi bi-bell"></i> Ver Alertas
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Nova Movimentação -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Movimentações
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-plus-circle fa-2x text-success"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.movimentacao_nova') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-plus"></i> Nova Movimentação
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Menu Rápido Admin -->
+    {% if current_user.is_admin() %}
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Administração
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-shield-check fa-2x text-info"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('main.produto_novo') }}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-plus"></i> Produto
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-person-plus"></i> Usuário
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Conteúdo Principal -->
+<div class="row">
+    <!-- Movimentações Recentes -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clock-history"></i> Movimentações Recentes
+                </h6>
+                <a href="{{ url_for('main.movimentacoes') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-eye"></i> Ver Todas
+                </a>
+            </div>
+            <div class="card-body">
+                {% if movimentacoes_recentes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Produto</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Usuário</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movimentacao in movimentacoes_recentes %}
+                            <tr>
+                                <td>
+                                    <small>{{ movimentacao.data_movimentacao|datetime('%d/%m/%Y') }}</small><br>
+                                    <small class="text-muted">{{ movimentacao.data_movimentacao|datetime('%H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ movimentacao.produto.codigo }}</strong><br>
+                                    <small class="text-muted">{{ movimentacao.produto.nome }}</small>
+                                </td>
+                                <td>
+                                    {% if movimentacao.tipo == 'entrada' %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-arrow-up"></i> Entrada
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-arrow-down"></i> Saída
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ movimentacao.quantidade }}</strong> un.
+                                </td>
+                                <td>
+                                    <small>{{ movimentacao.usuario_responsavel.nome }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox display-4 text-muted"></i>
+                    <p class="text-muted mt-2">Nenhuma movimentação registrada ainda.</p>
+                    <a href="{{ url_for('main.movimentacao_nova') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> Registrar Primeira Movimentação
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Produtos com Estoque Baixo -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Alertas de Estoque
+                </h6>
+                {% if current_user.is_admin() %}
+                <a href="{{ url_for('main.alertas') }}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-bell"></i> Ver Todos
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if produtos_alerta %}
+                <div class="list-group list-group-flush">
+                    {% for produto in produtos_alerta %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <h6 class="mb-1">{{ produto.nome }}</h6>
+                            <p class="mb-1 text-muted small">Código: {{ produto.codigo }}</p>
+                            <small class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i> 
+                                Estoque: {{ produto.quantidade }} / Mínimo: {{ produto.estoque_minimo }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            {% if produto.quantidade == 0 %}
+                                <span class="badge bg-danger">Zerado</span>
+                            {% else %}
+                                <span class="badge bg-warning">Baixo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-check-circle display-4 text-success"></i>
+                    <p class="text-success mt-2">Todos os produtos estão com estoque adequado!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Links Rápidos -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-lightning"></i> Ações Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.movimentacao_nova') }}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Nova Movimentação
+                    </a>
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('main.produto_novo') }}" class="btn btn-primary">
+                        <i class="bi bi-box"></i> Cadastrar Produto
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('main.produtos') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-search"></i> Consultar Produtos
+                    </a>
+                    <a href="{{ url_for('main.movimentacoes') }}" class="btn btn-outline-info">
+                        <i class="bi bi-list"></i> Histórico Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-refresh alertas count a cada 5 minutos
+    setInterval(function() {
+        $.get('{{ url_for("api.alertas") }}', function(data) {
+            $('#alertas-badge').text(data.total);
+            if (data.total > 0) {
+                $('#alertas-badge').show();
+            } else {
+                $('#alertas-badge').hide();
+            }
+        });
+    }, 300000); // 5 minutos
+});
+</script>
+{% endblock %}

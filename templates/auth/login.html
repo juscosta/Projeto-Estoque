@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Controle de Estoque{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-boxes"></i> 
+                    Controle de Estoque
+                </h4>
+                <p class="mb-0 small">Faça login para acessar o sistema</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Senha -->
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">
+                            <i class="bi bi-lock"></i> Senha
+                        </label>
+                        {{ form.senha(class="form-control" + (" is-invalid" if form.senha.errors else "")) }}
+                        {% if form.senha.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.senha.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Lembrar de mim -->
+                    <div class="mb-3 form-check">
+                        {{ form.lembrar(class="form-check-input") }}
+                        <label class="form-check-label" for="lembrar">
+                            Lembrar de mim
+                        </label>
+                    </div>
+                    
+                    <!-- Botão de login -->
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>
+                    <strong>Usuários de demonstração:</strong><br>
+                    <strong>Admin:</strong> admin@estoque.com / admin123<br>
+                    <strong>Usuário:</strong> usuario@estoque.com / user123
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informações do sistema -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+                <h5 class="card-title text-primary">
+                    <i class="bi bi-info-circle"></i> Sistema de Controle de Estoque
+                </h5>
+                <p class="card-text text-muted">
+                    Gerencie seu estoque de forma eficiente com controle de entrada e saída de produtos,
+                    alertas de estoque baixo e relatórios detalhados.
+                </p>
+                <div class="row text-center mt-3">
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <i class="bi bi-box-seam display-6 text-primary"></i>
+                            <h6 class="mt-2">Controle de Produtos</h6>
+                            <small class="text-muted">Cadastre e gerencie seus produtos</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <i class="bi bi-arrow-left-right display-6 text-success"></i>
+                            <h6 class="mt-2">Movimentação</h6>
+                            <small class="text-muted">Controle entrada e saída de estoque</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <i class="bi bi-bell display-6 text-warning"></i>
+                            <h6 class="mt-2">Alertas</h6>
+                            <small class="text-muted">Notificações de estoque baixo</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

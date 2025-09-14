@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar Usuário - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-person-plus text-primary"></i>
+                    Cadastrar Novo Usuário
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('main.usuarios') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulário de cadastro -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i>
+                        Informações do Usuário
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Nome -->
+                        <div class="mb-3">
+                            {{ form.nome.label(class="form-label") }}
+                            {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nome.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Este será o login do usuário</div>
+                        </div>
+                        
+                        <!-- Senha -->
+                        <div class="mb-3">
+                            {{ form.senha.label(class="form-label") }}
+                            {{ form.senha(class="form-control" + (" is-invalid" if form.senha.errors else "")) }}
+                            {% if form.senha.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.senha.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Mínimo de 6 caracteres</div>
+                        </div>
+                        
+                        <!-- Confirmar Senha -->
+                        <div class="mb-3">
+                            {{ form.confirmar_senha.label(class="form-label") }}
+                            {{ form.confirmar_senha(class="form-control" + (" is-invalid" if form.confirmar_senha.errors else "")) }}
+                            {% if form.confirmar_senha.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.confirmar_senha.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Tipo de Usuário -->
+                        <div class="mb-4">
+                            {{ form.tipo_usuario.label(class="form-label") }}
+                            {{ form.tipo_usuario(class="form-select" + (" is-invalid" if form.tipo_usuario.errors else "")) }}
+                            {% if form.tipo_usuario.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.tipo_usuario.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                <strong>Administrador:</strong> Acesso total ao sistema<br>
+                                <i class="bi bi-info-circle"></i> 
+                                <strong>Usuário Comum:</strong> Apenas visualização e movimentação
+                            </div>
+                        </div>
+                        
+                        <!-- Botões -->
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('main.usuarios') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informações sobre permissões -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-check"></i>
+                        Permissões por Tipo de Usuário
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-warning">
+                                <i class="bi bi-shield-fill-check"></i> Administrador
+                            </h6>
+                            <ul class="small">
+                                <li>Cadastrar/editar produtos</li>
+                                <li>Cadastrar/editar usuários</li>
+                                <li>Ver alertas de estoque</li>
+                                <li>Realizar movimentações</li>
+                                <li>Acessar relatórios</li>
+                                <li>Excluir registros</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-secondary">
+                                <i class="bi bi-person-fill"></i> Usuário Comum
+                            </h6>
+                            <ul class="small">
+                                <li>Visualizar produtos</li>
+                                <li>Realizar movimentações</li>
+                                <li>Ver histórico</li>
+                                <li class="text-muted"><del>Cadastrar produtos</del></li>
+                                <li class="text-muted"><del>Cadastrar usuários</del></li>
+                                <li class="text-muted"><del>Excluir registros</del></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validação de senha em tempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const senhaInput = document.getElementById('senha');
+    const confirmarSenhaInput = document.getElementById('confirmar_senha');
+    
+    function validarSenhas() {
+        if (confirmarSenhaInput.value && senhaInput.value !== confirmarSenhaInput.value) {
+            confirmarSenhaInput.classList.add('is-invalid');
+            confirmarSenhaInput.setCustomValidity('As senhas não coincidem');
+        } else {
+            confirmarSenhaInput.classList.remove('is-invalid');
+            confirmarSenhaInput.setCustomValidity('');
+        }
+    }
+    
+    senhaInput.addEventListener('input', validarSenhas);
+    confirmarSenhaInput.addEventListener('input', validarSenhas);
+});
+</script>
+{% endblock %}

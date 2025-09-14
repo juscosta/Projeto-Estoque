@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Movimentações - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-arrow-left-right text-primary"></i>
+                    Movimentações de Estoque
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('main.movimentacao_nova') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i>
+                        Nova Movimentação
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="produto" class="form-label">Produto</label>
+                            <select class="form-select" id="produto" name="produto">
+                                <option value="">Todos os produtos</option>
+                                {% for produto in produtos %}
+                                    <option value="{{ produto.id }}" {{ 'selected' if produto_selecionado == produto.id }}>{{ produto.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" name="tipo">
+                                <option value="">Todos</option>
+                                <option value="entrada" {{ 'selected' if tipo_selecionado == 'entrada' }}>Entrada</option>
+                                <option value="saida" {{ 'selected' if tipo_selecionado == 'saida' }}>Saída</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-search"></i>
+                                Filtrar
+                            </button>
+                            <a href="{{ url_for('main.movimentacoes') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela de movimentações -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list"></i> Histórico de Movimentações
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if movimentacoes.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Produto</th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Quantidade</th>
+                                    <th>Usuário</th>
+                                    <th>Observação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mov in movimentacoes.items %}
+                                <tr>
+                                    <td>
+                                        <small>{{ mov.data_movimentacao|datetime('%d/%m/%Y %H:%M') }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ mov.produto.codigo }}</strong><br>
+                                        <small class="text-muted">{{ mov.produto.nome }}</small>
+                                    </td>
+                                    <td>
+                                        {% if mov.tipo == 'entrada' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-arrow-up"></i> Entrada
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-arrow-down"></i> Saída
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>{{ mov.quantidade }}</strong>
+                                    </td>
+                                    <td>
+                                        <small>{{ mov.usuario_responsavel.nome }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ mov.observacao[:50] if mov.observacao else '-' }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if movimentacoes.pages > 1 %}
+                    <div class="card-footer">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if movimentacoes.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.movimentacoes', page=movimentacoes.prev_num, tipo=tipo_selecionado, produto=produto_selecionado) }}">
+                                            <i class="bi bi-chevron-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for page_num in movimentacoes.iter_pages() %}
+                                    {% if page_num %}
+                                        <li class="page-item {{ 'active' if page_num == movimentacoes.page }}">
+                                            <a class="page-link" href="{{ url_for('main.movimentacoes', page=page_num, tipo=tipo_selecionado, produto=produto_selecionado) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if movimentacoes.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.movimentacoes', page=movimentacoes.next_num, tipo=tipo_selecionado, produto=produto_selecionado) }}">
+                                            Próxima <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2">Nenhuma movimentação registrada ainda.</p>
+                        <a href="{{ url_for('main.movimentacao_nova') }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Registrar Primeira Movimentação
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

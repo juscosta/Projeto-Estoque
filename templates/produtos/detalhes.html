@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}{{ produto.nome }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-box text-primary"></i>
+                    Detalhes do Produto
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('produto_editar', id=produto.id) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            Editar
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="confirmarExclusao({{ produto.id }}, '{{ produto.nome }}')">
+                            <i class="fas fa-trash"></i>
+                            Excluir
+                        </button>
+                    </div>
+                    <a href="{{ url_for('produtos') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Card principal com informações do produto -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle text-primary"></i>
+                                Informações Gerais
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3 class="mb-1">{{ produto.nome }}</h3>
+                                    <p class="text-muted mb-3">
+                                        <code>{{ produto.codigo }}</code>
+                                    </p>
+                                    
+                                    {% if produto.descricao %}
+                                    <div class="mb-3">
+                                        <strong>Descrição:</strong>
+                                        <p class="mt-1">{{ produto.descricao }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <strong>Categoria:</strong>
+                                            <br><span class="badge bg-info fs-6">{{ produto.categoria }}</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <strong>Status:</strong>
+                                            <br>
+                                            {% if produto.ativo %}
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    Ativo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    Inativo
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <!-- Preço destacado -->
+                                    <div class="text-center bg-light p-3 rounded mb-3">
+                                        <h2 class="text-success mb-0">
+                                            R$ {{ "%.2f"|format(produto.preco) }}
+                                        </h2>
+                                        <small class="text-muted">Preço unitário</small>
+                                    </div>
+
+                                    <!-- Informações de estoque -->
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h4 class="mb-0 {{ 'text-warning' if produto.quantidade_estoque <= produto.estoque_minimo else 'text-primary' }}">
+                                                        {{ produto.quantidade_estoque }}
+                                                    </h4>
+                                                    <small class="text-muted">Em estoque</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h4 class="mb-0 text-secondary">
+                                                        {{ produto.estoque_minimo }}
+                                                    </h4>
+                                                    <small class="text-muted">Mínimo</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alerta de estoque baixo -->
+                            {% if produto.quantidade_estoque <= produto.estoque_minimo %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Atenção!</strong> Este produto está com estoque baixo.
+                                É recomendado fazer nova compra.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Histórico de movimentações (se disponível) -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-history text-primary"></i>
+                                Últimas Movimentações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if vendas and vendas|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Tipo</th>
+                                            <th>Quantidade</th>
+                                            <th>Valor Unit.</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for venda in vendas[:5] %}
+                                        <tr>
+                                            <td>{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
+                                            <td>
+                                                <span class="badge bg-success">Venda</span>
+                                            </td>
+                                            <td>{{ venda.quantidade }}</td>
+                                            <td>R$ {{ "%.2f"|format(venda.preco_unitario) }}</td>
+                                            <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if vendas|length > 5 %}
+                            <p class="text-center mt-2">
+                                <small class="text-muted">Mostrando as 5 movimentações mais recentes</small>
+                            </p>
+                            {% endif %}
+                            {% else %}
+                            <p class="text-muted text-center py-3">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <br>Nenhuma movimentação registrada ainda.
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar com estatísticas -->
+                <div class="col-lg-4">
+                    <!-- Estatísticas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-bar text-primary"></i>
+                                Estatísticas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-primary mb-0">{{ total_vendas or 0 }}</h4>
+                                        <small class="text-muted">Vendas</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-success mb-0">
+                                            R$ {{ "%.2f"|format(receita_total or 0) }}
+                                        </h4>
+                                        <small class="text-muted">Receita</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-info mb-0">{{ quantidade_vendida or 0 }}</h4>
+                                        <small class="text-muted">Unidades</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-warning mb-0">
+                                            R$ {{ "%.2f"|format(produto.preco * produto.quantidade_estoque) }}
+                                        </h4>
+                                        <small class="text-muted">Valor Stock</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações técnicas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cog text-primary"></i>
+                                Informações Técnicas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="small">
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>ID:</strong></div>
+                                    <div class="col-sm-6">{{ produto.id }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Criado em:</strong></div>
+                                    <div class="col-sm-6">{{ produto.data_criacao.strftime('%d/%m/%Y') if produto.data_criacao else 'N/A' }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Atualizado:</strong></div>
+                                    <div class="col-sm-6">{{ produto.data_atualizacao.strftime('%d/%m/%Y') if produto.data_atualizacao else 'N/A' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ações rápidas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-zap text-primary"></i>
+                                Ações Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('venda_nova') }}?produto_id={{ produto.id }}" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-cash-register"></i>
+                                    Registrar Venda
+                                </a>
+                                <button type="button" class="btn btn-info btn-sm">
+                                    <i class="fas fa-plus"></i>
+                                    Ajustar Estoque
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-copy"></i>
+                                    Duplicar Produto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o produto <strong id="produtoNome"></strong>?</p>
+                {% if total_vendas and total_vendas > 0 %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Atenção!</strong> Este produto possui {{ total_vendas }} venda(s) registrada(s).
+                </div>
+                {% endif %}
+                <p class="small text-muted">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formExcluir" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(produtoId, produtoNome) {
+    document.getElementById('produtoNome').textContent = produtoNome;
+    document.getElementById('formExcluir').action = `/produtos/${produtoId}/excluir`;
+    new bootstrap.Modal(document.getElementById('modalExcluir')).show();
+}
+</script>
+{% endblock %}

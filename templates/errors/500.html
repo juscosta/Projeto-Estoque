@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Erro do Servidor - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="error-template">
+                <h1 class="display-1 text-danger">500</h1>
+                <h2>Erro Interno do Servidor</h2>
+                <div class="error-details my-3">
+                    Algo deu errado! Por favor, tente novamente mais tarde.
+                </div>
+                <div class="error-actions">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-house"></i> Voltar ao Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

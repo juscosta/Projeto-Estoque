@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-cash-register text-success"></i>
+                    {{ titulo }}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('vendas') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Formulário principal -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-receipt text-success"></i>
+                                Dados da Venda
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" id="formVenda">
+                                {{ form.hidden_tag() }}
+                                
+                                <!-- Produto -->
+                                <div class="mb-3">
+                                    {{ form.produto_id.label(class="form-label") }}
+                                    {{ form.produto_id(class="form-select" + (" is-invalid" if form.produto_id.errors else ""), id="produto_id") }}
+                                    {% if form.produto_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.produto_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Selecione o produto que está sendo vendido</div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Quantidade -->
+                                    <div class="col-md-4 mb-3">
+                                        {{ form.quantidade.label(class="form-label") }}
+                                        {{ form.quantidade(class="form-control" + (" is-invalid" if form.quantidade.errors else ""), id="quantidade", min="1") }}
+                                        {% if form.quantidade.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.quantidade.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">
+                                            Disponível: <span id="estoque_disponivel">-</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Preço unitário -->
+                                    <div class="col-md-4 mb-3">
+                                        {{ form.preco_unitario.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">R$</span>
+                                            {{ form.preco_unitario(class="form-control" + (" is-invalid" if form.preco_unitario.errors else ""), id="preco_unitario", step="0.01") }}
+                                            {% if form.preco_unitario.errors %}
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.preco_unitario.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="form-text">
+                                            Sugerido: R$ <span id="preco_sugerido">-</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Valor total -->
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Valor Total</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">R$</span>
+                                            <input type="text" class="form-control bg-light" id="valor_total" readonly>
+                                        </div>
+                                        <div class="form-text">Calculado automaticamente</div>
+                                    </div>
+                                </div>
+
+                                <!-- Cliente (opcional) -->
+                                <div class="mb-3">
+                                    {{ form.cliente.label(class="form-label") }}
+                                    {{ form.cliente(class="form-control") }}
+                                    <div class="form-text">Campo opcional para identificar o cliente</div>
+                                </div>
+
+                                <!-- Observações -->
+                                <div class="mb-4">
+                                    {{ form.observacoes.label(class="form-label") }}
+                                    {{ form.observacoes(class="form-control", rows="3", placeholder="Observações adicionais sobre a venda...") }}
+                                </div>
+
+                                <!-- Botões -->
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" id="btnSalvar">
+                                        <i class="fas fa-save"></i>
+                                        Registrar Venda
+                                    </button>
+                                    <a href="{{ url_for('vendas') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar com informações -->
+                <div class="col-lg-4">
+                    <!-- Resumo da venda -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-calculator text-success"></i>
+                                Resumo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="resumo-venda">
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                    <p>Selecione um produto para ver o resumo</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações do produto selecionado -->
+                    <div class="card mt-4" id="card-produto" style="display: none;">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-box text-primary"></i>
+                                Produto Selecionado
+                            </h5>
+                        </div>
+                        <div class="card-body" id="info-produto">
+                            <!-- Será preenchido via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Dicas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Dicas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info border-0 mb-0">
+                                <ul class="mb-0 small">
+                                    <li>O sistema verifica automaticamente o estoque disponível</li>
+                                    <li>O preço unitário pode ser alterado se necessário</li>
+                                    <li>O valor total é calculado automaticamente</li>
+                                    <li>Vendas reduzem automaticamente o estoque</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dados dos produtos (passados do backend)
+const produtos = {{ produtos_json|safe if produtos_json else '{}' }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const produtoSelect = document.getElementById('produto_id');
+    const quantidadeInput = document.getElementById('quantidade');
+    const precoInput = document.getElementById('preco_unitario');
+    const valorTotalInput = document.getElementById('valor_total');
+    const estoqueSpan = document.getElementById('estoque_disponivel');
+    const precoSugeridoSpan = document.getElementById('preco_sugerido');
+    const cardProduto = document.getElementById('card-produto');
+    const infoProduto = document.getElementById('info-produto');
+    const resumoVenda = document.getElementById('resumo-venda');
+    const btnSalvar = document.getElementById('btnSalvar');
+
+    // Função para atualizar informações do produto
+    function atualizarProduto() {
+        const produtoId = produtoSelect.value;
+        
+        if (!produtoId || !produtos[produtoId]) {
+            // Reset quando não há produto selecionado
+            estoqueSpan.textContent = '-';
+            precoSugeridoSpan.textContent = '-';
+            cardProduto.style.display = 'none';
+            resumoVenda.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <p>Selecione um produto para ver o resumo</p>
+                </div>
+            `;
+            precoInput.value = '';
+            quantidadeInput.value = '';
+            valorTotalInput.value = '';
+            btnSalvar.disabled = true;
+            return;
+        }
+
+        const produto = produtos[produtoId];
+        
+        // Atualizar informações
+        estoqueSpan.textContent = produto.quantidade_estoque;
+        precoSugeridoSpan.textContent = produto.preco.toFixed(2);
+        precoInput.value = produto.preco.toFixed(2);
+        
+        // Mostrar informações do produto
+        infoProduto.innerHTML = `
+            <h6>${produto.nome}</h6>
+            <p class="small text-muted mb-2">${produto.descricao || 'Sem descrição'}</p>
+            <div class="row g-2 small">
+                <div class="col-6">
+                    <strong>Código:</strong><br>
+                    <code>${produto.codigo}</code>
+                </div>
+                <div class="col-6">
+                    <strong>Categoria:</strong><br>
+                    <span class="badge bg-info">${produto.categoria}</span>
+                </div>
+                <div class="col-6">
+                    <strong>Preço:</strong><br>
+                    R$ ${produto.preco.toFixed(2)}
+                </div>
+                <div class="col-6">
+                    <strong>Estoque:</strong><br>
+                    ${produto.quantidade_estoque} unidades
+                </div>
+            </div>
+        `;
+        
+        cardProduto.style.display = 'block';
+        btnSalvar.disabled = false;
+        
+        // Atualizar resumo se houver quantidade
+        atualizarResumo();
+    }
+
+    // Função para calcular e mostrar o resumo
+    function atualizarResumo() {
+        const produtoId = produtoSelect.value;
+        const quantidade = parseInt(quantidadeInput.value) || 0;
+        const precoUnitario = parseFloat(precoInput.value) || 0;
+        const valorTotal = quantidade * precoUnitario;
+        
+        valorTotalInput.value = valorTotal.toFixed(2);
+        
+        if (produtoId && produtos[produtoId] && quantidade > 0 && precoUnitario > 0) {
+            const produto = produtos[produtoId];
+            const estoqueApos = produto.quantidade_estoque - quantidade;
+            
+            resumoVenda.innerHTML = `
+                <div class="text-center">
+                    <h3 class="text-success mb-1">R$ ${valorTotal.toFixed(2)}</h3>
+                    <small class="text-muted">Valor da venda</small>
+                </div>
+                <hr>
+                <div class="row g-2 small">
+                    <div class="col-6"><strong>Produto:</strong></div>
+                    <div class="col-6">${produto.nome}</div>
+                    
+                    <div class="col-6"><strong>Quantidade:</strong></div>
+                    <div class="col-6">${quantidade} unidades</div>
+                    
+                    <div class="col-6"><strong>Preço Unit.:</strong></div>
+                    <div class="col-6">R$ ${precoUnitario.toFixed(2)}</div>
+                    
+                    <div class="col-6"><strong>Estoque após:</strong></div>
+                    <div class="col-6 ${estoqueApos < produto.estoque_minimo ? 'text-warning' : ''}">${estoqueApos} unidades</div>
+                </div>
+                ${estoqueApos < produto.estoque_minimo ? 
+                    '<div class="alert alert-warning mt-2 py-1 small mb-0"><i class="fas fa-exclamation-triangle"></i> Estoque ficará abaixo do mínimo!</div>' : 
+                    ''
+                }
+                ${quantidade > produto.quantidade_estoque ? 
+                    '<div class="alert alert-danger mt-2 py-1 small mb-0"><i class="fas fa-times-circle"></i> Quantidade indisponível!</div>' : 
+                    ''
+                }
+            `;
+            
+            // Validar quantidade
+            if (quantidade > produto.quantidade_estoque) {
+                quantidadeInput.classList.add('is-invalid');
+                btnSalvar.disabled = true;
+            } else {
+                quantidadeInput.classList.remove('is-invalid');
+                btnSalvar.disabled = false;
+            }
+        }
+    }
+
+    // Event listeners
+    produtoSelect.addEventListener('change', atualizarProduto);
+    quantidadeInput.addEventListener('input', atualizarResumo);
+    precoInput.addEventListener('input', atualizarResumo);
+    
+    // Formatação do preço em tempo real
+    precoInput.addEventListener('input', function() {
+        let valor = this.value.replace(/[^\d.,]/g, '');
+        valor = valor.replace(',', '.');
+        this.value = valor;
+    });
+
+    // Inicializar se já há um produto selecionado
+    if (produtoSelect.value) {
+        atualizarProduto();
+    }
+
+    // Validação do formulário
+    document.getElementById('formVenda').addEventListener('submit', function(e) {
+        const produtoId = produtoSelect.value;
+        const quantidade = parseInt(quantidadeInput.value) || 0;
+        
+        if (produtoId && produtos[produtoId]) {
+            const produto = produtos[produtoId];
+            if (quantidade > produto.quantidade_estoque) {
+                e.preventDefault();
+                alert('Quantidade indisponível no estoque!');
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="bi bi-arrow-left-right text-primary"></i>
+                    {{ titulo }}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('main.movimentacoes') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Formulário principal -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt text-primary"></i>
+                                Dados da Movimentação
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                
+                                <!-- Produto -->
+                                <div class="mb-3">
+                                    {{ form.produto_id.label(class="form-label") }}
+                                    {{ form.produto_id(class="form-select" + (" is-invalid" if form.produto_id.errors else ""), id="produto_id") }}
+                                    {% if form.produto_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.produto_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Selecione o produto para movimentação</div>
+                                </div>
+
+                                <!-- Tipo de Movimentação -->
+                                <div class="mb-3">
+                                    {{ form.tipo.label(class="form-label") }}
+                                    {{ form.tipo(class="form-select" + (" is-invalid" if form.tipo.errors else ""), id="tipo") }}
+                                    {% if form.tipo.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.tipo.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Quantidade -->
+                                <div class="mb-3">
+                                    {{ form.quantidade.label(class="form-label") }}
+                                    {{ form.quantidade(class="form-control" + (" is-invalid" if form.quantidade.errors else ""), id="quantidade", min="1") }}
+                                    {% if form.quantidade.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.quantidade.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        Estoque disponível: <span id="estoque_disponivel" class="fw-bold">-</span> unidades
+                                    </div>
+                                </div>
+
+                                <!-- Observação -->
+                                <div class="mb-4">
+                                    {{ form.observacao.label(class="form-label") }}
+                                    {{ form.observacao(class="form-control", rows="3", placeholder="Motivo ou observações sobre a movimentação (opcional)") }}
+                                </div>
+
+                                <!-- Botões -->
+                                <div class="d-flex gap-2">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                    <a href="{{ url_for('main.movimentacoes') }}" class="btn btn-secondary">
+                                        <i class="bi bi-x"></i>
+                                        Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar com informações -->
+                <div class="col-lg-4">
+                    <!-- Informações do produto selecionado -->
+                    <div class="card" id="card-produto" style="display: none;">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-box text-primary"></i>
+                                Produto Selecionado
+                            </h5>
+                        </div>
+                        <div class="card-body" id="info-produto">
+                            <!-- Será preenchido via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Dicas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle text-info"></i>
+                                Informações Importantes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info border-0 mb-0">
+                                <h6><i class="bi bi-lightbulb"></i> Dicas:</h6>
+                                <ul class="mb-0 small">
+                                    <li><strong>Entrada:</strong> Adiciona quantidade ao estoque (compras, devoluções)</li>
+                                    <li><strong>Saída:</strong> Remove quantidade do estoque (vendas, perdas)</li>
+                                    <li>O sistema valida automaticamente o estoque disponível</li>
+                                    <li>Todas as movimentações são registradas com data e usuário</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dados dos produtos para JavaScript
+const produtos = {
+    {% for produto in form.produto_id.choices %}
+        {% if produto[0] %}
+        '{{ produto[0] }}': {
+            nome: '{{ produto[1] }}',
+            estoque: 0  // Será preenchido via AJAX ou passado do backend
+        },
+        {% endif %}
+    {% endfor %}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const produtoSelect = document.getElementById('produto_id');
+    const tipoSelect = document.getElementById('tipo');
+    const quantidadeInput = document.getElementById('quantidade');
+    const estoqueSpan = document.getElementById('estoque_disponivel');
+    const cardProduto = document.getElementById('card-produto');
+    const infoProduto = document.getElementById('info-produto');
+
+    function atualizarInfoProduto() {
+        const produtoId = produtoSelect.value;
+        const tipo = tipoSelect.value;
+        
+        if (!produtoId) {
+            estoqueSpan.textContent = '-';
+            cardProduto.style.display = 'none';
+            return;
+        }
+
+        // Fazer requisição AJAX para obter informações do produto
+        fetch(`/api/produto/${produtoId}`)
+            .then(response => response.json())
+            .then(data => {
+                estoqueSpan.textContent = data.quantidade;
+                
+                infoProduto.innerHTML = `
+                    <h6>${data.nome}</h6>
+                    <p class="small text-muted mb-2">${data.descricao || 'Sem descrição'}</p>
+                    <div class="row g-2 small">
+                        <div class="col-6">
+                            <strong>Código:</strong><br>
+                            <code>${data.codigo}</code>
+                        </div>
+                        <div class="col-6">
+                            <strong>Estoque Atual:</strong><br>
+                            <span class="badge bg-${data.quantidade <= data.estoque_minimo ? 'warning' : 'success'}">
+                                ${data.quantidade} unidades
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Estoque Mínimo:</strong><br>
+                            ${data.estoque_minimo} unidades
+                        </div>
+                        <div class="col-6">
+                            <strong>Categoria:</strong><br>
+                            <span class="badge bg-info">${data.categoria}</span>
+                        </div>
+                    </div>
+                    ${data.quantidade <= data.estoque_minimo ? 
+                        '<div class="alert alert-warning mt-2 py-1 small mb-0"><i class="bi bi-exclamation-triangle"></i> Produto com estoque baixo!</div>' : 
+                        ''
+                    }
+                `;
+                
+                cardProduto.style.display = 'block';
+                
+                // Validar quantidade se for saída
+                if (tipo === 'saida') {
+                    quantidadeInput.max = data.quantidade;
+                    
+                    if (parseInt(quantidadeInput.value) > data.quantidade) {
+                        quantidadeInput.classList.add('is-invalid');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar produto:', error);
+                // Fallback sem AJAX
+                estoqueSpan.textContent = 'Verificar manualmente';
+            });
+    }
+
+    // Event listeners
+    produtoSelect.addEventListener('change', atualizarInfoProduto);
+    tipoSelect.addEventListener('change', function() {
+        if (this.value === 'entrada') {
+            quantidadeInput.removeAttribute('max');
+        }
+        atualizarInfoProduto();
+    });
+    
+    quantidadeInput.addEventListener('input', function() {
+        const tipo = tipoSelect.value;
+        const estoque = parseInt(estoqueSpan.textContent) || 0;
+        
+        if (tipo === 'saida' && parseInt(this.value) > estoque) {
+            this.classList.add('is-invalid');
+            this.setCustomValidity('Quantidade maior que o estoque disponível');
+        } else {
+            this.classList.remove('is-invalid');
+            this.setCustomValidity('');
+        }
+    });
+
+    // Inicializar se já há produto selecionado
+    if (produtoSelect.value) {
+        atualizarInfoProduto();
+    }
+});
+</script>
+{% endblock %}
