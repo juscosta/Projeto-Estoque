@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 cardProduto.style.display = 'block';
                 
                 // Validar quantidade se for saída
-                if (tipo === 'saida') {
+                if (tipo === '') {
                     quantidadeInput.max = data.quantidade;
                     
                     if (parseInt(quantidadeInput.value) > data.quantidade) {
