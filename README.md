@@ -26,7 +26,6 @@ Um sistema completo de controle de estoque desenvolvido em Python/Flask, com int
 - **Flask-SQLAlchemy** - ORM para banco de dados
 - **Flask-Login** - Gerenciamento de sessões
 - **Flask-WTF** - Formulários e validação
-- **Werkzeug** - Utilitários e segurança
 - **SQLite** - Banco de dados
 
 ### Frontend
@@ -81,9 +80,9 @@ python app.py
 ```
 
 ### 4️⃣ Acessar o Sistema
-- 🌐 **URL:** http://localhost:5000
-- 👤 **Admin:** admin@estoque.com / admin123
-- 👤 **Usuário:** usuario@estoque.com / user123
+- **URL:** http://localhost:5000
+- **Admin:** admin@estoque.com / admin123
+- **Usuário:** usuario@estoque.com / user123
 
 ## Estrutura do Projeto
 
@@ -193,7 +192,6 @@ Substitua o ícone na navbar editando `templates/base.html`:
 ## Segurança
 
 ### Medidas Implementadas
-- ✅ Hash de senhas com Werkzeug
 - ✅ Validação CSRF nos formulários
 - ✅ Controle de sessões seguro
 - ✅ Validação de entrada de dados
@@ -255,24 +253,9 @@ pip install -r requirements.txt
 
 O sistema vem com dados pré-carregados:
 - 2 usuários (admin e comum)
-- 8 produtos de exemplo
+- 9 produtos de exemplo
 - Categorias pré-definidas
 - Movimentações de exemplo
-
-## Contribuição
-
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## Suporte
-
-Se encontrar problemas:
-1. 📖 Consulte esta documentação
-2. 🐛 Verifique se há erros no console
-3. 💬 Crie uma issue com detalhes do erro
 
 ## Licença
 
