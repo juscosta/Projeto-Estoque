@@ -1,4 +1,4 @@
-# 🏪 Sistema de Controle de Estoque
+# Sistema de Controle de Estoque
 
 Um sistema completo de controle de estoque desenvolvido em Python/Flask, com interface web responsiva e funcionalidades avançadas de gerenciamento.
 
@@ -7,7 +7,7 @@ Um sistema completo de controle de estoque desenvolvido em Python/Flask, com int
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple.svg)
 ![SQLite](https://img.shields.io/badge/Database-SQLite-lightblue.svg)
 
-## 🎯 Características Principais
+## Características Principais
 
 - ✅ **Sistema de Autenticação** - Login/logout com controle de sessão
 - ✅ **Controle de Acesso** - Usuários administrativos e comuns
@@ -18,7 +18,7 @@ Um sistema completo de controle de estoque desenvolvido em Python/Flask, com int
 - ✅ **Interface Responsiva** - Funciona em desktop e mobile
 - ✅ **Validações** - Frontend e backend com feedback em tempo real
 
-## 🛠 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Backend
 - **Python 3.8+** - Linguagem de programação
@@ -36,7 +36,7 @@ Um sistema completo de controle de estoque desenvolvido em Python/Flask, com int
 - **Bootstrap Icons** - Ícones
 - **DataTables** - Tabelas interativas
 
-## 🚀 Instalação e Execução
+## Instalação e Execução
 
 ### 1️⃣ Pré-requisitos
 ```bash
@@ -85,7 +85,7 @@ python app.py
 - 👤 **Admin:** admin@estoque.com / admin123
 - 👤 **Usuário:** usuario@estoque.com / user123
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 controle_estoque/
@@ -112,35 +112,35 @@ controle_estoque/
     └── 📁 images/            # Imagens
 ```
 
-## 🔧 Funcionalidades Detalhadas
+## Funcionalidades Detalhadas
 
-### 👥 Sistema de Usuários
+### Sistema de Usuários
 - **Tipos**: Administrador e Usuário Comum
 - **Permissões**: Controle granular de acesso
 - **Sessões**: Login/logout seguro
 - **Cadastro**: Apenas admins podem criar usuários
 
-### 📦 Gestão de Produtos
+### Gestão de Produtos
 - **CRUD Completo**: Criar, ler, atualizar, deletar
 - **Códigos Únicos**: Validação de código duplicado
 - **Categorização**: Organização por categorias
 - **Preços**: Controle de valores (opcional)
 - **Validações**: Frontend e backend
 
-### 📊 Controle de Estoque
+### Controle de Estoque
 - **Entradas**: Compras, devoluções, ajustes positivos
 - **Saídas**: Vendas, uso interno, perdas
 - **Histórico**: Registro completo de movimentações
 - **Validações**: Verificação de estoque disponível
 - **Rastreabilidade**: Quem fez, quando e por quê
 
-### 🚨 Sistema de Alertas
+### Sistema de Alertas
 - **Estoque Baixo**: Produtos abaixo do mínimo
 - **Produtos Zerados**: Lista de itens sem estoque
 - **Notificações**: Badges e contadores visuais
 - **Dashboard**: Resumo no painel principal
 
-## 📱 Como Usar
+## Como Usar
 
 ### 1. Primeiro Acesso
 1. Acesse `http://localhost:5000`
@@ -168,7 +168,7 @@ controle_estoque/
 - Administradores podem ver alertas detalhados
 - Use o botão de alertas na barra de navegação
 
-## 🎨 Personalização
+## Personalização
 
 ### Cores e Tema
 Edite o arquivo `static/css/style.css`:
@@ -190,7 +190,7 @@ Substitua o ícone na navbar editando `templates/base.html`:
 </a>
 ```
 
-## 🔒 Segurança
+## Segurança
 
 ### Medidas Implementadas
 - ✅ Hash de senhas com Werkzeug
@@ -206,7 +206,7 @@ Substitua o ícone na navbar editando `templates/base.html`:
 - [ ] Implementar rate limiting
 - [ ] Backup automático dos dados
 
-## 🛠 Solução de Problemas
+## Solução de Problemas
 
 ### ❌ Erro: "Python não encontrado"
 ```bash
@@ -237,7 +237,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## 🎯 Requisitos Atendidos
+## Requisitos Atendidos
 
 ✅ **Linguagem Python** - Desenvolvimento completo em Python/Flask  
 ✅ **Interface de Usuário** - Web interface responsiva com Bootstrap  
@@ -251,7 +251,7 @@ pip install -r requirements.txt
 ✅ **Cadastro Restrito** - Apenas admin cadastra usuários  
 ✅ **Sistema de Alertas** - Produtos com estoque baixo em destaque  
 
-## 📊 Dados de Demonstração
+## Dados de Demonstração
 
 O sistema vem com dados pré-carregados:
 - 2 usuários (admin e comum)
@@ -259,7 +259,7 @@ O sistema vem com dados pré-carregados:
 - Categorias pré-definidas
 - Movimentações de exemplo
 
-## 🤝 Contribuição
+## Contribuição
 
 1. Fork o projeto
 2. Crie uma branch (`git checkout -b feature/AmazingFeature`)
@@ -267,14 +267,14 @@ O sistema vem com dados pré-carregados:
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📞 Suporte
+## Suporte
 
 Se encontrar problemas:
 1. 📖 Consulte esta documentação
 2. 🐛 Verifique se há erros no console
 3. 💬 Crie uma issue com detalhes do erro
 
-## 📄 Licença
+## Licença
 
 Este projeto foi desenvolvido para fins educacionais.
 
@@ -282,9 +282,8 @@ Este projeto foi desenvolvido para fins educacionais.
 
 <div align="center">
   
-  **🏪 Sistema de Controle de Estoque**
+  **Sistema de Controle de Estoque**
   
-  *Desenvolvido com ❤️ em Python/Flask*
   
   **Versão 1.0.0**
   
